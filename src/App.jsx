@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import { supabase } from "./supabaseClient";
 
@@ -10,8 +10,50 @@ function App() {
   const [listaSeleccionada, setListaSeleccionada] = useState(null);
   const [listas, setListas] = useState([]);
 
+  // Colegio seleccionado
+  const [colegios, setColegios] = useState([]);
+  const [colegioSeleccionado, setColegioSeleccionado] = useState(null);
+
+  // Cargar colegios desde Supabase
+  useEffect(() => {
+    cargarColegios();
+  }, []);
+
+  const cargarColegios = async () => {
+    const { data, error } = await supabase
+      .from("colegios")
+      .select("*")
+      .eq("activo", true)
+      .order("nombre", { ascending: true });
+
+    if (error) {
+      console.error("Error al cargar colegios:", error);
+      setError("No se pudieron cargar los colegios.");
+      return;
+    }
+
+    setColegios(data || []);
+  };
+
+  // Seleccionar colegio
+  const seleccionarColegio = (colegio) => {
+  if (colegioSeleccionado?.id === colegio.id) {
+    setColegioSeleccionado(null);
+  } else {
+    setColegioSeleccionado(colegio);
+  }
+
+  setError("");
+};
+
+  // Buscar estudiante por DNI dentro del colegio seleccionado
   const buscarEstudiante = async () => {
     setError("");
+
+    if (!colegioSeleccionado) {
+      setError("Primero selecciona tu colegio.");
+      return;
+    }
 
     if (dni.length !== 8) {
       setError("Ingresa un DNI válido de 8 dígitos.");
@@ -21,7 +63,8 @@ function App() {
     const { data, error } = await supabase
       .from("estudiantes")
       .select("*")
-      .eq("dni", dni);
+      .eq("dni", dni)
+      .eq("colegio_id", colegioSeleccionado.id);
 
     if (error) {
       console.error("Error Supabase:", error);
@@ -30,12 +73,12 @@ function App() {
     }
 
     if (!data || data.length === 0) {
-      setError("DNI no encontrado. Consulta con el encargado.");
+      setError("DNI no encontrado en este colegio.");
       return;
     }
 
     const estudianteEncontrado = data[0];
-
+   
     if (!estudianteEncontrado.habilitado) {
       setError("Este estudiante no está habilitado para votar.");
       return;
@@ -50,13 +93,20 @@ function App() {
     setPantalla("carnet");
   };
 
+  // Cargar listas del colegio
   const cargarListas = async () => {
     setError("");
+
+    if (!colegioSeleccionado) {
+      setError("No se ha seleccionado un colegio.");
+      return false;
+    }
 
     const { data, error } = await supabase
       .from("listas")
       .select("*")
-      .order("numero", { ascending: true });
+      .eq("colegio_id", colegioSeleccionado.id)
+      .order("id", { ascending: true });
 
     if (error) {
       console.error("Error al cargar listas:", error);
@@ -90,6 +140,7 @@ function App() {
     setPantalla("confirmacion");
   };
 
+  // Registrar voto
   const registrarVoto = async () => {
     if (!listaSeleccionada) {
       setError("No has seleccionado una lista.");
@@ -101,6 +152,11 @@ function App() {
       return;
     }
 
+    if (!colegioSeleccionado) {
+      setError("No se encontró el colegio.");
+      return;
+    }
+
     setError("");
 
     // 1. Guardar el voto
@@ -109,6 +165,7 @@ function App() {
       .insert([
         {
           lista_id: listaSeleccionada,
+          colegio_id: colegioSeleccionado.id,
         },
       ]);
 
@@ -118,11 +175,11 @@ function App() {
       return;
     }
 
-    // 2. Marcar al estudiante como que ya votó
+    // 2. Marcar estudiante como que ya votó
     const { error: errorEstudiante } = await supabase
       .from("estudiantes")
       .update({ ya_voto: true })
-      .eq("dni", estudiante.dni);
+      .eq("id", estudiante.id);
 
     if (errorEstudiante) {
       console.error(
@@ -168,32 +225,154 @@ function App() {
       {/* CONTENIDO */}
       <main className="contenido-principal">
 
-        {/* INICIO */}
+        {/* SELECCIÓN DE COLEGIO */}
         {pantalla === "inicio" && (
           <div className="card card-inicio">
 
             <div className="icono-principal">
-              🗳️
+              🏫
             </div>
 
             <span className="etiqueta">
-              PROCESO ELECTORAL
+              ELECCIONES DEL MUNICIPIO ESCOLAR
             </span>
 
             <h1>
-              Elecciones del
+              Selecciona tu
               <br />
-              Municipio Escolar
+              colegio
             </h1>
 
             <p className="subtitulo">
-              Ingresa tu DNI para verificar tu identidad
-              y participar en el proceso electoral.
+              Selecciona el colegio donde participarás
+              en las elecciones.
+            </p>
+
+            <div className="colegios">
+
+              {colegios.map((colegio) => (
+                <div
+                  key={colegio.id}
+                  className={`colegio-card ${
+                    colegioSeleccionado?.id === colegio.id
+                      ? "seleccionado"
+                      : ""
+                  }`}
+                  onClick={() => seleccionarColegio(colegio)}
+                >
+
+                  <div className="colegio-insignia">
+                    {colegio.insignia_url ? (
+                      <img
+                        src={colegio.insignia_url}
+                        alt={`Insignia de ${colegio.nombre}`}
+                      />
+                    ) : (
+                      <span>🏫</span>
+                    )}
+                  </div>
+
+                  <div className="colegio-info">
+                    <span>COLEGIO</span>
+
+                    <h2>
+                      {colegio.nombre}
+                    </h2>
+
+                    <p>
+                      Elecciones del Municipio Escolar
+                    </p>
+                  </div>
+
+                  <div className="colegio-check">
+                    {colegioSeleccionado?.id === colegio.id
+                      ? "✓"
+                      : "›"}
+                  </div>
+
+                </div>
+              ))}
+
+            </div>
+
+            {colegios.length === 0 && (
+              <p className="sin-listas">
+                No hay colegios registrados.
+              </p>
+            )}
+
+            <button
+              className="btn-principal"
+              disabled={!colegioSeleccionado}
+              onClick={() => {
+                setError("");
+                setPantalla("dni");
+              }}
+            >
+              CONTINUAR
+              <span>→</span>
+            </button>
+
+
+
+            {error && (
+              <p className="error">{error}</p>
+            )}
+
+            <div className="seguridad">
+              🔒 Tu participación será registrada de manera segura
+            </div>
+
+          </div>
+        )}
+
+        {/* DNI */}
+        {pantalla === "dni" && colegioSeleccionado && (
+          <div className="card card-inicio">
+
+            <div className="colegio-mini">
+
+              <div className="colegio-insignia mini">
+                {colegioSeleccionado.insignia_url ? (
+                  <img
+                    src={colegioSeleccionado.insignia_url}
+                    alt="Insignia"
+                  />
+                ) : (
+                  <span>🏫</span>
+                )}
+              </div>
+
+              <div>
+                <span>COLEGIO</span>
+                <strong>
+                  {colegioSeleccionado.nombre}
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="icono-principal">
+              🔐
+            </div>
+
+            <span className="etiqueta">
+              IDENTIFICACIÓN DEL ELECTOR
+            </span>
+
+            <h1>
+              Ingresa tu DNI
+            </h1>
+
+            <p className="subtitulo">
+              Verificaremos tu identidad para que puedas
+              participar en las elecciones.
             </p>
 
             <div className="separador"></div>
 
             <div className="campo">
+
               <label htmlFor="dni">
                 Número de DNI
               </label>
@@ -209,9 +388,11 @@ function App() {
                   setDni(
                     e.target.value.replace(/\D/g, "")
                   );
+
                   setError("");
                 }}
               />
+
             </div>
 
             <button
@@ -222,6 +403,7 @@ function App() {
               <span>→</span>
             </button>
 
+          
             {error && (
               <p className="error">{error}</p>
             )}
@@ -229,6 +411,7 @@ function App() {
             <div className="seguridad">
               🔒 Tu participación es registrada de manera segura
             </div>
+
           </div>
         )}
 
@@ -244,7 +427,9 @@ function App() {
               IDENTIFICACIÓN ELECTORAL
             </span>
 
-            <h1>Carnet Electoral</h1>
+            <h1>
+              Carnet Electoral
+            </h1>
 
             <p className="subtitulo">
               Verifica que tus datos sean correctos.
@@ -253,23 +438,27 @@ function App() {
             <div className="datos">
 
               <div className="dato">
-                <span>Nombres</span>
-                <strong>{estudiante.nombres}</strong>
-              </div>
+  <span>Nombres</span>
+  <strong>{estudiante.nombres}</strong>
+</div>
 
-              <div className="dato">
-                <span>Apellidos</span>
-                <strong>{estudiante.apellidos}</strong>
-              </div>
+<div className="dato">
+  <span>Apellidos</span>
+  <strong>{estudiante.apellidos}</strong>
+</div>
 
               <div className="dato">
                 <span>Grado</span>
-                <strong>{estudiante.grado}</strong>
+                <strong>
+                  {estudiante.grado}
+                </strong>
               </div>
 
               <div className="dato">
                 <span>Sección</span>
-                <strong>{estudiante.seccion}</strong>
+                <strong>
+                  {estudiante.seccion}
+                </strong>
               </div>
 
             </div>
@@ -290,6 +479,7 @@ function App() {
             {error && (
               <p className="error">{error}</p>
             )}
+
           </div>
         )}
 
@@ -305,7 +495,9 @@ function App() {
               CÉDULA ELECTORAL
             </span>
 
-            <h1>Selecciona tu lista</h1>
+            <h1>
+              Selecciona tu lista
+            </h1>
 
             <p className="subtitulo">
               Selecciona una sola opción para continuar.
@@ -331,6 +523,7 @@ function App() {
                     }`,
                   }}
                 >
+
                   <input
                     type="radio"
                     name="lista"
@@ -345,14 +538,18 @@ function App() {
                   <div className="lista-contenido">
 
                     <span className="numero-lista">
-                      LISTA {lista.numero}
+                      LISTA {lista.id}
                     </span>
 
-                    <h2>{lista.nombre}</h2>
+                    <h2>
+                      {lista.nombre}
+                    </h2>
 
                     <p>
                       Candidato:{" "}
-                      <strong>{lista.candidato}</strong>
+                      <strong>
+                        {lista.candidato}
+                      </strong>
                     </p>
 
                   </div>
@@ -362,6 +559,7 @@ function App() {
                       ✓
                     </div>
                   )}
+
                 </div>
               ))}
 
@@ -369,7 +567,7 @@ function App() {
 
             {listas.length === 0 && (
               <p className="sin-listas">
-                No hay listas disponibles.
+                No hay listas disponibles para este colegio.
               </p>
             )}
 
@@ -384,6 +582,7 @@ function App() {
             {error && (
               <p className="error">{error}</p>
             )}
+
           </div>
         )}
 
@@ -399,7 +598,9 @@ function App() {
               CONFIRMACIÓN
             </span>
 
-            <h1>Confirma tu voto</h1>
+            <h1>
+              Confirma tu voto
+            </h1>
 
             <p className="subtitulo">
               Revisa tu elección antes de registrar el voto.
@@ -407,10 +608,12 @@ function App() {
 
             <div className="seleccion-final">
 
-              <span>Has seleccionado</span>
+              <span>
+                Has seleccionado
+              </span>
 
               <strong>
-                LISTA {listaActual?.numero}
+                LISTA {listaActual?.id}
               </strong>
 
               <p>
@@ -450,6 +653,7 @@ function App() {
             {error && (
               <p className="error">{error}</p>
             )}
+
           </div>
         )}
 
@@ -470,18 +674,20 @@ function App() {
             </h1>
 
             <p className="subtitulo">
-              Tu participación ha sido registrada
-              correctamente.
+              Tu participación ha sido registrada correctamente.
             </p>
 
             <div className="aviso-final">
-              <strong>Gracias por participar.</strong>
+
+              <strong>
+                Gracias por participar.
+              </strong>
 
               <span>
-                Tu voto ha sido registrado de manera
-                segura en las Elecciones del Municipio
-                Escolar.
+                Tu voto ha sido registrado de manera segura
+                en las Elecciones del Municipio Escolar.
               </span>
+
             </div>
 
           </div>
@@ -496,7 +702,9 @@ function App() {
           Elecciones del Municipio Escolar
         </span>
 
-        <span className="punto">•</span>
+        <span className="punto">
+          •
+        </span>
 
         <span>
           Participación estudiantil
@@ -509,3 +717,4 @@ function App() {
 }
 
 export default App;
+

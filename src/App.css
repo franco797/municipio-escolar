@@ -109,7 +109,6 @@ input {
 
 .logo-superior {
   display: block;
-
   color: var(--azul);
   font-size: 18px;
   font-weight: 800;
@@ -118,9 +117,7 @@ input {
 
 .logo-institucional {
   display: block;
-
   margin-top: 2px;
-
   color: #64748b;
   font-size: 12px;
   font-weight: 600;
@@ -143,7 +140,7 @@ input {
 }
 
 /* =========================================================
-   TARJETA
+   TARJETA PRINCIPAL
    ========================================================= */
 
 .card {
@@ -193,7 +190,6 @@ input {
   border-radius: 50%;
 
   background: var(--azul-claro);
-
   border: 2px solid #cce3f8;
 
   font-size: 34px;
@@ -212,7 +208,6 @@ input {
   border-radius: 50%;
 
   background: #fff7df;
-
   border: 2px solid #f4df9b;
 
   font-size: 32px;
@@ -231,7 +226,6 @@ input {
   border-radius: 50%;
 
   background: var(--verde-fondo);
-
   border: 3px solid #b9e5c9;
 
   color: var(--verde);
@@ -267,6 +261,7 @@ input {
 
   font-size: 34px;
   line-height: 1.15;
+
   font-weight: 800;
 }
 
@@ -297,11 +292,233 @@ input {
 }
 
 /* =========================================================
+   SELECCIÓN DE COLEGIO
+   ========================================================= */
+
+.colegios {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin-top: 28px;
+}
+
+.colegio-card {
+  width: 100%;
+  max-width: 440px;
+
+  padding: 30px 25px;
+
+  background: white;
+
+  border: 2px solid #dce8f4;
+  border-radius: 20px;
+
+  cursor: pointer;
+
+  text-align: center;
+
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s,
+    border-color 0.25s;
+
+  box-shadow:
+    0 8px 25px rgba(0, 55, 110, 0.08);
+}
+
+.colegio-card:hover {
+  transform: translateY(-4px);
+
+  border-color: var(--celeste);
+
+  box-shadow:
+    0 14px 30px rgba(0, 87, 168, 0.15);
+}
+
+.colegio-card.seleccionado {
+  border-color: var(--azul);
+
+  background: #f4f9ff;
+
+  box-shadow:
+    0 0 0 3px rgba(0, 87, 168, 0.10);
+}
+
+.insignia {
+  width: 135px;
+  height: 135px;
+
+  object-fit: contain;
+
+  display: block;
+
+  margin: 0 auto 20px;
+}
+
+.insignia-fallback {
+  width: 135px;
+  height: 135px;
+
+  margin: 0 auto 20px;
+
+  border-radius: 50%;
+
+  background: var(--azul-claro);
+  border: 2px solid #cce3f8;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 55px;
+}
+
+.colegio-nombre {
+  margin: 18px 0 0;
+  padding: 0;
+
+  color: #003b73 !important;
+
+  background: #ffffff;
+
+  font-size: 22px;
+  line-height: 1.3;
+
+  font-weight: 800;
+
+  text-align: center;
+
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.colegio-card {
+  background: #ffffff !important;
+  color: #003b73;
+}
+
+.colegio-card * {
+  opacity: 1;
+}
+
+.colegio-card:hover {
+  background: #f8fbff !important;
+}
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.btn-principal {
+  width: 100%;
+
+  min-height: 54px;
+
+  margin-top: 22px;
+
+  border: none;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--azul),
+      var(--celeste)
+    );
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  letter-spacing: 0.4px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  box-shadow:
+    0 8px 18px rgba(0, 87, 168, 0.2);
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s;
+}
+
+.btn-principal span {
+  font-size: 20px;
+
+  transition:
+    transform 0.2s;
+}
+
+.btn-principal:hover {
+  filter: brightness(1.05);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 24px rgba(0, 87, 168, 0.25);
+}
+
+.btn-principal:hover span {
+  transform: translateX(4px);
+}
+
+.btn-principal:active {
+  transform: translateY(0);
+}
+
+.btn-principal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  width: 100%;
+
+  min-height: 50px;
+
+  margin-top: 12px;
+
+  border: 2px solid #cbd8e5;
+  border-radius: 11px;
+
+  background: white;
+
+  color: #475569;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #9fb3c8;
+}
+
+/* =========================================================
    CAMPO DNI
    ========================================================= */
 
 .campo {
   text-align: left;
+
   margin-top: 25px;
 }
 
@@ -318,11 +535,13 @@ input {
 
 .campo input {
   width: 100%;
+
   height: 54px;
 
   padding: 0 17px;
 
   border: 2px solid #d5e2ef;
+
   border-radius: 11px;
 
   background: #ffffff;
@@ -350,67 +569,79 @@ input {
 }
 
 /* =========================================================
-   BOTONES
+   PANTALLA DNI
    ========================================================= */
 
-.btn-principal {
-  width: 100%;
-  min-height: 54px;
+.dni-card {
+  max-width: 560px;
+  margin: 0 auto;
+}
 
-  margin-top: 22px;
-
-  border: none;
-  border-radius: 11px;
-
-  background: linear-gradient(
-    135deg,
-    var(--azul),
-    var(--celeste)
-  );
-
-  color: white;
-
-  font-size: 14px;
-  font-weight: 800;
-
-  letter-spacing: 0.4px;
-
-  cursor: pointer;
-
+.colegio-seleccionado {
   display: flex;
+
   align-items: center;
   justify-content: center;
-  gap: 12px;
+
+  gap: 15px;
+
+  margin-bottom: 28px;
+
+  padding: 15px;
+
+  border-radius: 14px;
+
+  background: var(--azul-claro);
+
+  border: 1px solid #cce3f8;
+}
+
+.colegio-seleccionado .insignia {
+  width: 70px;
+  height: 70px;
+
+  margin: 0;
+}
+
+.colegio-seleccionado h2 {
+  margin: 0;
+
+  color: var(--azul-oscuro);
+
+  font-size: 18px;
+
+  text-align: left;
+}
+
+.input-dni {
+  width: 100%;
+
+  height: 54px;
+
+  margin-top: 12px;
+
+  padding: 0 17px;
+
+  border: 2px solid #d5e2ef;
+
+  border-radius: 11px;
+
+  background: white;
+
+  color: #172b4d;
+
+  font-size: 18px;
+
+  text-align: center;
+
+  outline: none;
+}
+
+.input-dni:focus {
+  border-color: var(--azul);
 
   box-shadow:
-    0 8px 18px rgba(0, 87, 168, 0.2);
-
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s,
-    filter 0.2s;
-}
-
-.btn-principal span {
-  font-size: 20px;
-  transition: transform 0.2s;
-}
-
-.btn-principal:hover {
-  filter: brightness(1.05);
-
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 12px 24px rgba(0, 87, 168, 0.25);
-}
-
-.btn-principal:hover span {
-  transform: translateX(4px);
-}
-
-.btn-principal:active {
-  transform: translateY(0);
+    0 0 0 4px rgba(0, 87, 168, 0.1);
 }
 
 /* =========================================================
@@ -437,11 +668,13 @@ input {
   border-radius: 9px;
 
   background: #fff1f1;
+
   border: 1px solid #ffcaca;
 
   color: var(--rojo);
 
   font-size: 14px;
+
   font-weight: 600;
 }
 
@@ -453,6 +686,7 @@ input {
   margin-top: 25px;
 
   display: grid;
+
   grid-template-columns: 1fr 1fr;
 
   gap: 12px;
@@ -478,9 +712,11 @@ input {
   color: #718096;
 
   font-size: 11px;
+
   font-weight: 700;
 
   text-transform: uppercase;
+
   letter-spacing: 0.5px;
 }
 
@@ -498,16 +734,21 @@ input {
   border-radius: 10px;
 
   background: var(--verde-fondo);
+
   border: 1px solid #bce4c9;
 
   color: var(--verde);
 
   font-size: 12px;
+
   font-weight: 800;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   gap: 8px;
 }
 
@@ -523,7 +764,9 @@ input {
   margin-top: 25px;
 
   display: flex;
+
   flex-direction: column;
+
   gap: 12px;
 
   text-align: left;
@@ -537,14 +780,14 @@ input {
   padding: 16px 18px;
 
   display: flex;
+
   align-items: center;
+
   gap: 14px;
 
   background: white;
 
-  border-top: 1px solid #dce5ee;
-  border-right: 1px solid #dce5ee;
-  border-bottom: 1px solid #dce5ee;
+  border: 1px solid #dce5ee;
 
   border-radius: 12px;
 
@@ -591,6 +834,7 @@ input {
   color: var(--azul);
 
   font-size: 10px;
+
   font-weight: 800;
 
   letter-spacing: 1px;
@@ -629,10 +873,12 @@ input {
   color: white;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
   font-size: 15px;
+
   font-weight: 800;
 
   flex-shrink: 0;
@@ -668,6 +914,7 @@ input {
   color: #64748b;
 
   font-size: 12px;
+
   font-weight: 700;
 }
 
@@ -677,6 +924,7 @@ input {
   color: var(--azul);
 
   font-size: 25px;
+
   font-weight: 800;
 }
 
@@ -686,11 +934,13 @@ input {
   color: var(--azul-oscuro);
 
   font-size: 17px;
+
   font-weight: 700;
 }
 
 .seleccion-final small {
   color: #64748b;
+
   font-size: 13px;
 }
 
@@ -704,6 +954,7 @@ input {
 
 .botones {
   display: grid;
+
   grid-template-columns: 1fr 1.5fr;
 
   gap: 10px;
@@ -719,6 +970,7 @@ input {
   min-height: 54px;
 
   border: 2px solid #cbd8e5;
+
   border-radius: 11px;
 
   background: white;
@@ -726,6 +978,7 @@ input {
   color: #475569;
 
   font-size: 13px;
+
   font-weight: 800;
 
   cursor: pointer;
@@ -766,7 +1019,9 @@ input {
   border: 1px solid #bce4c9;
 
   display: flex;
+
   flex-direction: column;
+
   gap: 7px;
 }
 
@@ -780,6 +1035,7 @@ input {
   color: #527060;
 
   font-size: 13px;
+
   line-height: 1.5;
 }
 
@@ -791,8 +1047,10 @@ input {
   padding: 18px 20px;
 
   display: flex;
+
   justify-content: center;
   align-items: center;
+
   gap: 10px;
 
   border-top: 1px solid #dce8f4;
@@ -815,6 +1073,7 @@ input {
    ========================================================= */
 
 @media (max-width: 700px) {
+
   .contenido-principal {
     padding: 35px 15px 45px;
   }
@@ -854,6 +1113,7 @@ input {
    ========================================================= */
 
 @media (max-width: 480px) {
+
   .contenido-principal {
     padding: 25px 12px 35px;
   }
@@ -905,8 +1165,36 @@ input {
     order: 2;
   }
 
+  .colegio-card {
+    padding: 25px 18px;
+  }
+
+  .insignia {
+    width: 115px;
+    height: 115px;
+  }
+
+  .insignia-fallback {
+    width: 115px;
+    height: 115px;
+  }
+
+  .colegio-nombre {
+    font-size: 19px;
+  }
+
+  .colegio-seleccionado .insignia {
+    width: 60px;
+    height: 60px;
+  }
+
+  .colegio-seleccionado h2 {
+    font-size: 16px;
+  }
+
   .pie {
     flex-direction: column;
+
     gap: 3px;
   }
 
@@ -923,5 +1211,24 @@ button:focus-visible,
 input:focus-visible,
 .lista:focus-visible {
   outline: 3px solid rgba(30, 136, 216, 0.35);
+
   outline-offset: 3px;
+}
+
+
+
+
+
+
+.colegio-insignia {
+  border-radius: 14px !important;
+  overflow: visible !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.colegio-insignia img {
+  border-radius: 0 !important;
+  object-fit: contain !important;
 }
