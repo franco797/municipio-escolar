@@ -90,7 +90,6 @@ function App() {
     setPantalla("confirmacion");
   };
 
-  // REGISTRAR VOTO
   const registrarVoto = async () => {
     if (!listaSeleccionada) {
       setError("No has seleccionado una lista.");
@@ -142,249 +141,368 @@ function App() {
     setPantalla("finalizado");
   };
 
+  const listaActual = listas.find(
+    (lista) => lista.id === listaSeleccionada
+  );
+
   return (
     <div className="app">
 
-      {/* INICIO */}
-      {pantalla === "inicio" && (
-        <div className="card">
-          <div className="icono">🗳️</div>
+      {/* ENCABEZADO */}
+      <header className="encabezado">
+        <div className="logo-municipio">
+          <div className="logo-icono">🗳️</div>
 
-          <h1>Elecciones del Municipio Escolar</h1>
+          <div>
+            <span className="logo-superior">
+              MUNICIPIO ESCOLAR
+            </span>
 
-          <p className="subtitulo">
-            Ingresa tu DNI para verificar tu identidad
-          </p>
-
-          <label htmlFor="dni">
-            Número de DNI
-          </label>
-
-          <input
-            id="dni"
-            type="text"
-            inputMode="numeric"
-            maxLength="8"
-            placeholder="Ejemplo: 12345678"
-            value={dni}
-            onChange={(e) => {
-              setDni(
-                e.target.value.replace(/\D/g, "")
-              );
-              setError("");
-            }}
-          />
-
-          <button onClick={buscarEstudiante}>
-            CONTINUAR
-          </button>
-
-          {error && (
-            <p className="error">{error}</p>
-          )}
+            <span className="logo-institucional">
+              ELECCIONES ESCOLARES
+            </span>
+          </div>
         </div>
-      )}
+      </header>
 
-      {/* CARNET */}
-      {pantalla === "carnet" && estudiante && (
-        <div className="card carnet">
-          <div className="icono">🪪</div>
+      {/* CONTENIDO */}
+      <main className="contenido-principal">
 
-          <h1>Carnet Electoral</h1>
+        {/* INICIO */}
+        {pantalla === "inicio" && (
+          <div className="card card-inicio">
 
-          <div className="datos">
+            <div className="icono-principal">
+              🗳️
+            </div>
 
-            <p>
-              <strong>Nombres:</strong>{" "}
-              {estudiante.nombres}
+            <span className="etiqueta">
+              PROCESO ELECTORAL
+            </span>
+
+            <h1>
+              Elecciones del
+              <br />
+              Municipio Escolar
+            </h1>
+
+            <p className="subtitulo">
+              Ingresa tu DNI para verificar tu identidad
+              y participar en el proceso electoral.
             </p>
 
-            <p>
-              <strong>Apellidos:</strong>{" "}
-              {estudiante.apellidos}
+            <div className="separador"></div>
+
+            <div className="campo">
+              <label htmlFor="dni">
+                Número de DNI
+              </label>
+
+              <input
+                id="dni"
+                type="text"
+                inputMode="numeric"
+                maxLength="8"
+                placeholder="Ingresa tu DNI"
+                value={dni}
+                onChange={(e) => {
+                  setDni(
+                    e.target.value.replace(/\D/g, "")
+                  );
+                  setError("");
+                }}
+              />
+            </div>
+
+            <button
+              className="btn-principal"
+              onClick={buscarEstudiante}
+            >
+              CONTINUAR
+              <span>→</span>
+            </button>
+
+            {error && (
+              <p className="error">{error}</p>
+            )}
+
+            <div className="seguridad">
+              🔒 Tu participación es registrada de manera segura
+            </div>
+          </div>
+        )}
+
+        {/* CARNET */}
+        {pantalla === "carnet" && estudiante && (
+          <div className="card carnet">
+
+            <div className="icono-principal">
+              🪪
+            </div>
+
+            <span className="etiqueta">
+              IDENTIFICACIÓN ELECTORAL
+            </span>
+
+            <h1>Carnet Electoral</h1>
+
+            <p className="subtitulo">
+              Verifica que tus datos sean correctos.
             </p>
 
-            <p>
-              <strong>Grado:</strong>{" "}
-              {estudiante.grado}
-            </p>
+            <div className="datos">
 
-            <p>
-              <strong>Sección:</strong>{" "}
-              {estudiante.seccion}
-            </p>
+              <div className="dato">
+                <span>Nombres</span>
+                <strong>{estudiante.nombres}</strong>
+              </div>
+
+              <div className="dato">
+                <span>Apellidos</span>
+                <strong>{estudiante.apellidos}</strong>
+              </div>
+
+              <div className="dato">
+                <span>Grado</span>
+                <strong>{estudiante.grado}</strong>
+              </div>
+
+              <div className="dato">
+                <span>Sección</span>
+                <strong>{estudiante.seccion}</strong>
+              </div>
+
+            </div>
 
             <div className="habilitado">
-              ✓ ESTUDIANTE HABILITADO
+              <span>✓</span>
+              ESTUDIANTE HABILITADO PARA VOTAR
+            </div>
+
+            <button
+              className="btn-principal"
+              onClick={irAVotar}
+            >
+              INGRESAR A VOTAR
+              <span>→</span>
+            </button>
+
+            {error && (
+              <p className="error">{error}</p>
+            )}
+          </div>
+        )}
+
+        {/* VOTACIÓN */}
+        {pantalla === "votacion" && (
+          <div className="card votacion">
+
+            <div className="icono-principal">
+              🗳️
+            </div>
+
+            <span className="etiqueta">
+              CÉDULA ELECTORAL
+            </span>
+
+            <h1>Selecciona tu lista</h1>
+
+            <p className="subtitulo">
+              Selecciona una sola opción para continuar.
+            </p>
+
+            <div className="listas">
+
+              {listas.map((lista) => (
+                <div
+                  key={lista.id}
+                  className={`lista ${
+                    listaSeleccionada === lista.id
+                      ? "seleccionada"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setListaSeleccionada(lista.id);
+                    setError("");
+                  }}
+                  style={{
+                    borderLeft: `7px solid ${
+                      lista.color || "#1565c0"
+                    }`,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="lista"
+                    checked={
+                      listaSeleccionada === lista.id
+                    }
+                    onChange={() =>
+                      setListaSeleccionada(lista.id)
+                    }
+                  />
+
+                  <div className="lista-contenido">
+
+                    <span className="numero-lista">
+                      LISTA {lista.numero}
+                    </span>
+
+                    <h2>{lista.nombre}</h2>
+
+                    <p>
+                      Candidato:{" "}
+                      <strong>{lista.candidato}</strong>
+                    </p>
+
+                  </div>
+
+                  {listaSeleccionada === lista.id && (
+                    <div className="check-lista">
+                      ✓
+                    </div>
+                  )}
+                </div>
+              ))}
+
+            </div>
+
+            {listas.length === 0 && (
+              <p className="sin-listas">
+                No hay listas disponibles.
+              </p>
+            )}
+
+            <button
+              className="btn-principal"
+              onClick={confirmarVoto}
+            >
+              CONTINUAR
+              <span>→</span>
+            </button>
+
+            {error && (
+              <p className="error">{error}</p>
+            )}
+          </div>
+        )}
+
+        {/* CONFIRMACIÓN */}
+        {pantalla === "confirmacion" && (
+          <div className="card confirmacion">
+
+            <div className="icono-confirmacion">
+              ⚠️
+            </div>
+
+            <span className="etiqueta">
+              CONFIRMACIÓN
+            </span>
+
+            <h1>Confirma tu voto</h1>
+
+            <p className="subtitulo">
+              Revisa tu elección antes de registrar el voto.
+            </p>
+
+            <div className="seleccion-final">
+
+              <span>Has seleccionado</span>
+
+              <strong>
+                LISTA {listaActual?.numero}
+              </strong>
+
+              <p>
+                {listaActual?.nombre}
+              </p>
+
+              <small>
+                Candidato: {listaActual?.candidato}
+              </small>
+
+            </div>
+
+            <p className="pregunta">
+              ¿Estás seguro de tu elección?
+            </p>
+
+            <div className="botones">
+
+              <button
+                className="btn-secundario"
+                onClick={() =>
+                  setPantalla("votacion")
+                }
+              >
+                ← CAMBIAR
+              </button>
+
+              <button
+                className="btn-principal"
+                onClick={registrarVoto}
+              >
+                CONFIRMAR VOTO
+              </button>
+
+            </div>
+
+            {error && (
+              <p className="error">{error}</p>
+            )}
+          </div>
+        )}
+
+        {/* FINALIZADO */}
+        {pantalla === "finalizado" && (
+          <div className="card finalizado">
+
+            <div className="icono-exito">
+              ✓
+            </div>
+
+            <span className="etiqueta">
+              PROCESO COMPLETADO
+            </span>
+
+            <h1>
+              ¡Voto registrado!
+            </h1>
+
+            <p className="subtitulo">
+              Tu participación ha sido registrada
+              correctamente.
+            </p>
+
+            <div className="aviso-final">
+              <strong>Gracias por participar.</strong>
+
+              <span>
+                Tu voto ha sido registrado de manera
+                segura en las Elecciones del Municipio
+                Escolar.
+              </span>
             </div>
 
           </div>
+        )}
 
-          <button onClick={irAVotar}>
-            INGRESAR A VOTAR
-          </button>
+      </main>
 
-          {error && (
-            <p className="error">{error}</p>
-          )}
-        </div>
-      )}
+      {/* PIE DE PÁGINA */}
+      <footer className="pie">
 
-      {/* VOTACIÓN */}
-      {pantalla === "votacion" && (
-        <div className="card votacion">
+        <span>
+          Elecciones del Municipio Escolar
+        </span>
 
-          <div className="icono">🗳️</div>
+        <span className="punto">•</span>
 
-          <h1>Cédula de Votación</h1>
+        <span>
+          Participación estudiantil
+        </span>
 
-          <p className="subtitulo">
-            Selecciona una sola lista
-          </p>
-
-          <div className="listas">
-
-            {listas.map((lista) => (
-              <div
-                key={lista.id}
-                className={`lista ${
-                  listaSeleccionada === lista.id
-                    ? "seleccionada"
-                    : ""
-                }`}
-                onClick={() => {
-                  setListaSeleccionada(lista.id);
-                  setError("");
-                }}
-                style={{
-                  borderLeft: `8px solid ${
-                    lista.color || "#2563eb"
-                  }`,
-                }}
-              >
-
-                <input
-                  type="radio"
-                  name="lista"
-                  checked={
-                    listaSeleccionada === lista.id
-                  }
-                  onChange={() =>
-                    setListaSeleccionada(lista.id)
-                  }
-                />
-
-                <div>
-
-                  <h2>
-                    {lista.nombre}
-                  </h2>
-
-                  <p>
-                    Candidato:{" "}
-                    {lista.candidato}
-                  </p>
-
-                </div>
-
-              </div>
-            ))}
-
-          </div>
-
-          {listas.length === 0 && (
-            <p>
-              No hay listas disponibles.
-            </p>
-          )}
-
-          <button onClick={confirmarVoto}>
-            CONTINUAR
-          </button>
-
-          {error && (
-            <p className="error">{error}</p>
-          )}
-
-        </div>
-      )}
-
-      {/* CONFIRMACIÓN */}
-      {pantalla === "confirmacion" && (
-        <div className="card">
-
-          <div className="icono">⚠️</div>
-
-          <h1>Confirmar voto</h1>
-
-          <p className="subtitulo">
-            Has seleccionado:
-          </p>
-
-          <div className="seleccion-final">
-
-            <strong>
-              Lista{" "}
-              {
-                listas.find(
-                  (lista) =>
-                    lista.id === listaSeleccionada
-                )?.numero
-              }
-            </strong>
-
-          </div>
-
-          <p>
-            ¿Estás seguro de tu elección?
-          </p>
-
-          <div className="botones">
-
-            <button
-              className="secundario"
-              onClick={() =>
-                setPantalla("votacion")
-              }
-            >
-              CAMBIAR
-            </button>
-
-            <button onClick={registrarVoto}>
-              CONFIRMAR VOTO
-            </button>
-
-          </div>
-
-          {error && (
-            <p className="error">{error}</p>
-          )}
-
-        </div>
-      )}
-
-      {/* FINALIZADO */}
-      {pantalla === "finalizado" && (
-        <div className="card">
-
-          <div className="icono">✅</div>
-
-          <h1>
-            ¡Voto registrado!
-          </h1>
-
-          <p className="subtitulo">
-            Tu participación ha sido registrada
-            correctamente.
-          </p>
-
-          <div className="aviso-final">
-            Gracias por participar en las elecciones
-            del Municipio Escolar.
-          </div>
-
-        </div>
-      )}
+      </footer>
 
     </div>
   );
