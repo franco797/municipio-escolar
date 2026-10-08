@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
+import Admin from "./Admin";
 import { supabase } from "./supabaseClient";
 
 function App() {
@@ -25,25 +26,28 @@ function App() {
     cargarColegios();
   }, []);
 
-  const cargarColegios = async () => {
-    setError("");
+const cargarColegios = async () => {
+  
 
-    const { data, error } = await supabase
-      .from("colegios")
-      .select("*")
-      .order("nombre", { ascending: true });
+  console.log("INICIANDO CARGA DE COLEGIOS DESDE ADMIN");
 
-    console.log("COLEGIOS CARGADOS:", data);
-    console.log("ERROR COLEGIOS:", error);
+  const { data, error } = await supabase
+    .from("colegios")
+    .select("*")
+    .order("nombre", { ascending: true });
 
-    if (error) {
-      console.error("Error al cargar colegios:", error);
-      setError("No se pudieron cargar los colegios.");
-      return;
-    }
+  console.log("COLEGIOS ADMIN:", data);
+  console.log("ERROR COLEGIOS ADMIN:", error);
 
-    setColegios(data || []);
-  };
+  if (error) {
+    console.error("Error al cargar colegios:", error);
+    setErrorColegios("No se pudieron cargar los colegios");
+    return;
+  }
+
+  setColegios(data || []);
+  console.log("ESTADO COLEGIOS DESPUÉS DE SET:", data);
+};
 
   const iniciarSesionAdmin = async () => {
     setErrorAdmin("");
@@ -261,7 +265,7 @@ function App() {
   return (
     <div className="app">
 
-      <header className="encabezado">
+        <header className="encabezado">
 
         <div className="logo-municipio">
 
@@ -281,109 +285,39 @@ function App() {
 
         </div>
 
-        {!modoAdmin && (
-          <button
-            className="btn-admin"
-            onClick={() => {
-              setModoAdmin(true);
-              setErrorAdmin("");
-            }}
-          >
-            🔐 Administración
-          </button>
-        )}
+     
 
-      </header>
+            {!modoAdmin && (
+        <button
+          className="btn-admin"
+          onClick={() => {
+            setModoAdmin(true);
+            setErrorAdmin("");
+          }}
+          title="Administración"
+        >
+          🔐
+        </button>
+      )}
 
-      {modoAdmin && !sesionAdmin ? (
+    </header>
 
-        <main className="contenido-principal">
+      
 
-          <div className="card card-inicio">
+     {modoAdmin && !sesionAdmin ? (
 
-            <div className="icono-principal">
-              🔐
-            </div>
+  <Admin
+    supabase={supabase}
+    volverAElecciones={() => {
+      setModoAdmin(false);
+      setErrorAdmin("");
+      setUsuarioAdmin("");
+      setPasswordAdmin("");
+    }}
+  />
 
-            <span className="etiqueta">
-              ACCESO ADMINISTRATIVO
-            </span>
-
-            <h1>
-              Panel de Administración
-            </h1>
-
-            <p className="subtitulo">
-              Ingresa tus credenciales para continuar.
-            </p>
-
-            <div className="campo">
-
-              <label>
-                Usuario
-              </label>
-
-              <input
-                type="text"
-                placeholder="Ingresa tu usuario"
-                value={usuarioAdmin}
-                onChange={(e) => {
-                  setUsuarioAdmin(e.target.value);
-                  setErrorAdmin("");
-                }}
-              />
-
-            </div>
-
-            <div className="campo">
-
-              <label>
-                Contraseña
-              </label>
-
-              <input
-                type="password"
-                placeholder="Ingresa tu contraseña"
-                value={passwordAdmin}
-                onChange={(e) => {
-                  setPasswordAdmin(e.target.value);
-                  setErrorAdmin("");
-                }}
-              />
-
-            </div>
-
-            <button
-              className="btn-principal"
-              onClick={iniciarSesionAdmin}
-            >
-              INGRESAR
-              <span>→</span>
-            </button>
-
-            {errorAdmin && (
-              <p className="error">
-                {errorAdmin}
-              </p>
-            )}
-
-            <button
-              className="btn-secundario"
-              onClick={() => {
-                setModoAdmin(false);
-                setErrorAdmin("");
-                setUsuarioAdmin("");
-                setPasswordAdmin("");
-              }}
-            >
-              ← VOLVER
-            </button>
-
-          </div>
-
-        </main>
-
-      ) : sesionAdmin ? (
+) : sesionAdmin ? (
+      
 
         <main className="contenido-principal">
 
