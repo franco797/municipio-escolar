@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import "./Admin.css";
+import Estudiantes from "./Estudiantes";
+import ConfiguracionEleccion from "./ConfiguracionEleccion";
+import ListasCandidatos from "./ListasCandidatos";
 
 function Admin({
   supabase,
@@ -9,6 +12,7 @@ function Admin({
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [errorAdmin, setErrorAdmin] = useState("");
+  const [cargandoLogin, setCargandoLogin] = useState(false);
   const [sesionAdmin, setSesionAdmin] = useState(false);
   const [administrador, setAdministrador] = useState(null);
 
@@ -17,83 +21,76 @@ function Admin({
   const [colegioSeleccionado, setColegioSeleccionado] = useState(null);
   const [errorColegios, setErrorColegios] = useState("");
 
-  // =========================
   // INICIAR SESIÓN
-  // =========================
   const iniciarSesionAdmin = async (e) => {
     e.preventDefault();
-
     setErrorAdmin("");
 
+    const usuarioIngresado = usuario.trim();
+
+    if (!usuarioIngresado || !password) {
+      setErrorAdmin("Ingresa tu usuario y contraseña.");
+      return;
+    }
+
+    setCargandoLogin(true);
+
     try {
-      const usuarioIngresado = usuario.trim();
-
-      console.log("USUARIO ESCRITO:", usuarioIngresado);
-
-      // Buscar administrador
       const { data, error } = await supabase
         .from("administradores")
-        .select("id, nombre, usuario, rol, activo, email")
-        .eq("usuario", usuarioIngresado)
-        .limit(1);
-
-      console.log("ADMINISTRADOR ENCONTRADO:", data);
-      console.log("ERROR ADMINISTRADOR:", error);
+        .select("*")
+        .ilike("usuario", usuarioIngresado)
+        .maybeSingle();
 
       if (error) {
-        console.error("ERROR SUPABASE ADMIN:", error);
-        setErrorAdmin("Error al consultar el administrador");
+        console.error("ERROR AL BUSCAR ADMINISTRADOR:", error);
+        setErrorAdmin("No se pudo consultar el administrador.");
         return;
       }
 
-      if (!data || data.length === 0) {
-        setErrorAdmin("Administrador no encontrado");
+      if (!data) {
+        setErrorAdmin(
+          "Administrador no encontrado. Verifica el usuario y los permisos de consulta."
+        );
         return;
       }
 
-      const administradorEncontrado = data[0];
-
-      // Verificar que esté activo
-      if (!administradorEncontrado.activo) {
-        setErrorAdmin("El administrador está desactivado");
+      if (!data.activo) {
+        setErrorAdmin("El administrador está desactivado.");
         return;
       }
 
-      // Verificar que tenga correo
-      if (!administradorEncontrado.email) {
-        setErrorAdmin("El administrador no tiene correo registrado");
+      if (!data.email) {
+        setErrorAdmin("El administrador no tiene correo registrado.");
         return;
       }
 
-      // Iniciar sesión con Supabase Auth
       const { error: authError } =
         await supabase.auth.signInWithPassword({
-          email: administradorEncontrado.email,
-          password: password,
+          email: data.email.trim(),
+          password,
         });
 
-      console.log("ERROR AUTH:", authError);
-
       if (authError) {
-        console.error("ERROR AL INICIAR AUTH:", authError);
-        setErrorAdmin("Contraseña incorrecta");
+        console.error("ERROR DE AUTENTICACIÓN:", authError);
+        setErrorAdmin(
+          "No se pudo iniciar sesión. Verifica la contraseña y que la cuenta esté registrada en Supabase Authentication."
+        );
         return;
       }
 
-      // Sesión correcta
-      setAdministrador(administradorEncontrado);
+      setAdministrador(data);
       setSesionAdmin(true);
       setPantalla("inicio");
-
     } catch (error) {
       console.error("ERROR GENERAL ADMIN:", error);
-      setErrorAdmin("Ocurrió un error al iniciar sesión");
+      setErrorAdmin("Ocurrió un error al iniciar sesión.");
+    } finally {
+      setCargandoLogin(false);
     }
   };
 
-  // =========================
   // CARGAR COLEGIOS
-  // =========================
   const cargarColegios = async () => {
     setErrorColegios("");
 
@@ -102,11 +99,9 @@ function Admin({
       .select("*")
       .order("nombre", { ascending: true });
 
-    console.log("COLEGIOS ADMIN:", data);
-    console.log("ERROR COLEGIOS ADMIN:", error);
-
     if (error) {
-      setErrorColegios("No se pudieron cargar los colegios");
+      console.error("ERROR AL CARGAR COLEGIOS:", error);
+      setErrorColegios("No se pudieron cargar los colegios.");
       return;
     }
 
@@ -119,49 +114,46 @@ function Admin({
     }
   }, [sesionAdmin, pantalla]);
 
-  // =========================
-  // IR A ELECCIONES
-  // =========================
+  // NAVEGACIÓN
   const irAElecciones = () => {
     setPantalla("colegios");
   };
 
-  // =========================
-  // SELECCIONAR COLEGIO
-  // =========================
   const seleccionarColegio = (colegio) => {
     setColegioSeleccionado(colegio);
     setPantalla("menuColegio");
   };
 
-  // =========================
   // CERRAR SESIÓN
-  // =========================
   const salir = async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
 
-    setSesionAdmin(false);
-    setAdministrador(null);
-    setUsuario("");
-    setPassword("");
-    setErrorAdmin("");
-    setPantalla("inicio");
-    setColegios([]);
-    setColegioSeleccionado(null);
+      if (error) {
+        console.error("ERROR AL CERRAR SESIÓN:", error);
+      }
+    } finally {
+      setSesionAdmin(false);
+      setAdministrador(null);
+      setUsuario("");
+      setPassword("");
+      setErrorAdmin("");
+      setCargandoLogin(false);
+      setPantalla("inicio");
+      setColegios([]);
+      setColegioSeleccionado(null);
 
-    if (cerrarSesionAdmin) {
-      cerrarSesionAdmin();
+      if (cerrarSesionAdmin) {
+        cerrarSesionAdmin();
+      }
     }
   };
 
-  // =========================
   // LOGIN
-  // =========================
   if (!sesionAdmin) {
     return (
       <div className="admin-container">
         <div className="admin-login">
-
           <div className="admin-icon">🔐</div>
 
           <h1>Panel de Administración</h1>
@@ -171,7 +163,6 @@ function Admin({
           </p>
 
           <form onSubmit={iniciarSesionAdmin}>
-
             <label>Usuario</label>
 
             <input
@@ -179,6 +170,7 @@ function Admin({
               value={usuario}
               onChange={(e) => setUsuario(e.target.value)}
               placeholder="Ingrese su usuario"
+              autoComplete="username"
               required
             />
 
@@ -189,11 +181,12 @@ function Admin({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingrese su contraseña"
+              autoComplete="current-password"
               required
             />
 
             {errorAdmin && (
-              <div className="admin-error">
+              <div className="admin-error" role="alert">
                 {errorAdmin}
               </div>
             )}
@@ -201,32 +194,30 @@ function Admin({
             <button
               type="submit"
               className="admin-btn-primary"
+              disabled={cargandoLogin}
             >
-              INGRESAR
+              {cargandoLogin ? "VERIFICANDO..." : "INGRESAR"}
             </button>
-
           </form>
 
           <button
+            type="button"
             className="admin-btn-back"
             onClick={volverAElecciones}
+            disabled={cargandoLogin}
           >
             ← VOLVER
           </button>
-
         </div>
       </div>
     );
   }
 
-  // =========================
   // LISTA DE COLEGIOS
-  // =========================
   if (pantalla === "colegios") {
     return (
       <div className="admin-container">
         <div className="admin-panel">
-
           <h1>Gestionar colegios</h1>
 
           <p className="admin-welcome">
@@ -234,19 +225,19 @@ function Admin({
           </p>
 
           {errorColegios && (
-            <div className="admin-error">
+            <div className="admin-error" role="alert">
               {errorColegios}
             </div>
           )}
 
-          {colegios.length === 0 && !errorColegios && (
-            <p>Cargando colegios...</p>
+          {!errorColegios && colegios.length === 0 && (
+            <p>No hay colegios disponibles.</p>
           )}
 
           <div className="admin-actions">
-
             {colegios.map((colegio) => (
               <button
+                type="button"
                 key={colegio.id}
                 className="admin-btn-primary"
                 onClick={() => seleccionarColegio(colegio)}
@@ -254,29 +245,58 @@ function Admin({
                 {colegio.nombre}
               </button>
             ))}
-
           </div>
 
           <button
+            type="button"
             className="admin-btn-back"
             onClick={() => setPantalla("inicio")}
           >
             ← VOLVER
           </button>
-
         </div>
       </div>
     );
   }
 
-  // =========================
+  // ESTUDIANTES
+  if (pantalla === "estudiantes") {
+    return (
+      <Estudiantes
+        supabase={supabase}
+        colegio={colegioSeleccionado}
+        volver={() => setPantalla("menuColegio")}
+      />
+    );
+  }
+
+  // LISTAS Y CANDIDATOS
+  if (pantalla === "listas") {
+    return (
+      <ListasCandidatos
+        supabase={supabase}
+        colegio={colegioSeleccionado}
+        volver={() => setPantalla("menuColegio")}
+      />
+    );
+  }
+
+  // CONFIGURACIÓN
+  if (pantalla === "configuracion") {
+    return (
+      <ConfiguracionEleccion
+        supabase={supabase}
+        colegio={colegioSeleccionado}
+        volver={() => setPantalla("menuColegio")}
+      />
+    );
+  }
+
   // MENÚ DEL COLEGIO
-  // =========================
   if (pantalla === "menuColegio") {
     return (
       <div className="admin-container">
         <div className="admin-panel">
-
           <div className="admin-icon">🏫</div>
 
           <h1>{colegioSeleccionado?.nombre}</h1>
@@ -286,26 +306,33 @@ function Admin({
           </p>
 
           <div className="admin-actions">
-
-            <button className="admin-btn-primary">
+            <button
+              type="button"
+              className="admin-btn-primary"
+              onClick={() => setPantalla("estudiantes")}
+            >
               VER ESTUDIANTES
             </button>
 
-            <button className="admin-btn-primary">
+           
               VER LISTAS Y CANDIDATOS
-            </button>
-
-            <button className="admin-btn-primary">
+            
+            <button
+              type="button"
+              className="admin-btn-primary"
+              onClick={() => setPantalla("resultados")}
+            >
               VER RESULTADOS
             </button>
 
-            <button className="admin-btn-primary">
+          
+           
               CONFIGURAR ELECCIÓN
-            </button>
-
+          
           </div>
 
           <button
+            type="button"
             className="admin-btn-back"
             onClick={() => setPantalla("colegios")}
           >
@@ -313,50 +340,42 @@ function Admin({
           </button>
 
           <button
+            type="button"
             className="admin-btn-danger"
             onClick={salir}
           >
             CERRAR SESIÓN
           </button>
-
         </div>
       </div>
     );
   }
 
-  // =========================
   // PANEL PRINCIPAL
-  // =========================
   return (
     <div className="admin-container">
       <div className="admin-panel">
-
         <div className="admin-icon">🔐</div>
 
         <h1>Administración</h1>
 
         <p className="admin-welcome">
-          Bienvenido,{" "}
-          <strong>{administrador?.nombre}</strong>
+          Bienvenido, <strong>{administrador?.nombre}</strong>
         </p>
 
         <div className="admin-info">
-
           <p>
-            <strong>Usuario:</strong>{" "}
-            {administrador?.usuario}
+            <strong>Usuario:</strong> {administrador?.usuario}
           </p>
 
           <p>
-            <strong>Rol:</strong>{" "}
-            {administrador?.rol}
+            <strong>Rol:</strong> {administrador?.rol}
           </p>
-
         </div>
 
         <div className="admin-actions">
-
           <button
+            type="button"
             className="admin-btn-primary"
             onClick={irAElecciones}
           >
@@ -364,14 +383,13 @@ function Admin({
           </button>
 
           <button
+            type="button"
             className="admin-btn-danger"
             onClick={salir}
           >
             CERRAR SESIÓN
           </button>
-
         </div>
-
       </div>
     </div>
   );

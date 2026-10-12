@@ -1,0 +1,147 @@
+.config-eleccion-container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 28px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #f3f6fa;
+}
+
+.config-eleccion-panel {
+  width: 100%;
+  max-width: 650px;
+  box-sizing: border-box;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(25, 45, 75, 0.1);
+  text-align: center;
+  color: #1e293b;
+}
+
+.config-eleccion-icono {
+  font-size: 38px;
+  margin-bottom: 8px;
+}
+
+.config-eleccion-panel h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.config-eleccion-colegio {
+  margin: 0 0 24px;
+  color: #526174;
+}
+
+.config-eleccion-seccion {
+  padding: 20px;
+  border: 1px solid #dce4ee;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.config-eleccion-seccion h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.config-eleccion-seccion p {
+  line-height: 1.5;
+}
+
+.config-eleccion-seccion label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: 600;
+}
+
+.config-eleccion-seccion input[type="file"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.config-eleccion-boton,
+.config-eleccion-volver {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.config-eleccion-boton {
+  color: #fff;
+  background: #174a83;
+}
+
+.config-eleccion-boton:hover:not(:disabled) {
+  background: #10375f;
+}
+
+.config-eleccion-boton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.config-eleccion-volver {
+  color: #1e293b;
+  background: #e8edf3;
+}
+
+.config-eleccion-volver:hover {
+  background: #dbe3ec;
+}
+
+.config-eleccion-mensaje {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.config-eleccion-mensaje.exito {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.config-eleccion-mensaje.error {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
+
+.config-eleccion-ayuda {
+  color: #166534;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .config-eleccion-container {
+    padding: 14px 10px;
+  }
+
+  .config-eleccion-panel {
+    padding: 18px 14px;
+  }
+
+  .config-eleccion-panel h1 {
+    font-size: 24px;
+  }
+
+  .config-eleccion-seccion {
+    padding: 14px;
+  }
+}
