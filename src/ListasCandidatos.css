@@ -1,0 +1,150 @@
+
+.lc-contenedor {
+  min-height: 100vh;
+  padding: 32px 18px;
+  background: #f3f6fb;
+  color: #1e293b;
+  font-family: Arial, sans-serif;
+}
+
+.lc-principal {
+  max-width: 1000px;
+  margin: auto;
+}
+
+.lc-principal h1 {
+  color: #173b70;
+  font-size: 32px;
+}
+
+.lc-panel {
+  padding: 26px;
+  margin: 22px 0;
+  background: white;
+  border: 1px solid #dce5f0;
+  border-radius: 16px;
+  box-shadow: 0 6px 22px #173b7010;
+}
+
+.lc-panel h2,
+.lc-panel h3 {
+  color: #173b70;
+  margin-top: 0;
+}
+
+.lc-panel label {
+  display: block;
+  margin: 12px 0 6px;
+  font-weight: 600;
+}
+
+.lc-campo {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  box-sizing: border-box;
+  background: white;
+  color: #1e293b;
+}
+
+.lc-boton {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 9px;
+  background: #1d4ed8;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.lc-boton:hover {
+  background: #173b70;
+}
+
+.lc-titulo-listas {
+  margin: 34px 0 18px;
+  color: #173b70;
+}
+
+.lc-tarjeta-lista {
+  overflow: hidden;
+  margin-bottom: 24px;
+  background: white;
+  border: 1px solid #dce5f0;
+  border-radius: 16px;
+  box-shadow: 0 6px 22px #173b7010;
+}
+
+.lc-cabecera-lista {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  padding: 24px;
+}
+
+.lc-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.lc-foto-alcalde {
+  width: 140px;
+  height: 165px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 12px;
+}
+
+.lc-seccion-integrantes {
+  padding: 22px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.lc-integrante {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lc-foto-integrante {
+  width: 58px;
+  height: 66px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 8px;
+}
+
+@media (max-width: 650px) {
+  .lc-contenedor {
+    padding: 16px 10px;
+  }
+
+  .lc-panel {
+    padding: 16px;
+  }
+
+  .lc-cabecera-lista {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .lc-logo {
+    width: 85px;
+    height: 85px;
+  }
+
+  .lc-foto-alcalde {
+    width: 105px;
+    height: 130px;
+  }
+}

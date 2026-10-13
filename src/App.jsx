@@ -102,29 +102,72 @@ function App() {
     setPantalla("carnet");
   };
 
-  const cargarListas = async () => {
-    setError("");
+ 
+const cargarListas = async () => {
+  setError("");
 
-    if (!colegioSeleccionado) {
-      setError("No se ha seleccionado un colegio.");
-      return false;
-    }
+  if (!colegioSeleccionado) {
+    setError("No se ha seleccionado un colegio.");
+    return false;
+  }
 
-    const { data, error } = await supabase
-      .from("listas")
-      .select("*")
-      .eq("colegio_id", colegioSeleccionado.id)
-      .order("id", { ascending: true });
+  const { data: listasData, error: errorListas } = await supabase
+    .from("listas")
+    .select("*")
+    .eq("colegio_id", colegioSeleccionado.id)
+    .order("id", { ascending: true });
 
-    if (error) {
-      console.error("ERROR AL CARGAR LISTAS:", error);
-      setError("No se pudieron cargar las listas.");
-      return false;
-    }
+  if (errorListas) {
+    console.error("ERROR AL CARGAR LISTAS:", errorListas);
+    setError("No se pudieron cargar las listas.");
+    return false;
+  }
 
-    setListas(data || []);
+  const listasBase = listasData || [];
+
+  if (listasBase.length === 0) {
+    setListas([]);
     return true;
-  };
+  }
+
+  const idsListas = listasBase.map((lista) => lista.id);
+
+  const { data: candidatosData, error: errorCandidatos } =
+    await supabase
+      .from("candidatos")
+      .select("lista_id, nombres, apellidos, cargo, foto_url")
+      .in("lista_id", idsListas);
+
+  if (errorCandidatos) {
+    console.error("ERROR AL CARGAR CANDIDATOS:", errorCandidatos);
+    setError("No se pudieron cargar las fotos de los candidatos.");
+    return false;
+  }
+
+  const candidatos = candidatosData || [];
+
+  const listasCompletas = listasBase.map((lista) => {
+    const alcalde = candidatos.find(
+      (candidato) =>
+        String(candidato.lista_id) === String(lista.id) &&
+        (candidato.cargo || "").trim().toLowerCase() ===
+          "alcalde escolar"
+    );
+
+    return {
+      ...lista,
+      foto_candidato:
+        alcalde?.foto_url || lista.foto_candidato || "",
+      candidato: alcalde
+        ? `${alcalde.nombres || ""} ${alcalde.apellidos || ""}`.trim()
+        : lista.candidato || "",
+    };
+  });
+
+  setListas(listasCompletas);
+  return true;
+};
+
 
   const irAVotar = async () => {
     setListaSeleccionada(null);
@@ -199,11 +242,18 @@ function App() {
           },
         ]);
 
-      if (errorVoto) {
-        console.error("ERROR AL REGISTRAR VOTO:", errorVoto);
-        setError("No se pudo registrar el voto.");
-        return;
-      }
+     
+if (errorVoto) {
+  console.error("ERROR AL REGISTRAR VOTO:", {
+    mensaje: errorVoto.message,
+    detalle: errorVoto.details,
+    sugerencia: errorVoto.hint,
+    codigo: errorVoto.code,
+  });
+  setError("No se pudo registrar el voto: " + errorVoto.message);
+  return;
+}
+
 
       // Marcar al estudiante como elector que ya votó.
       const { data: estudianteActualizado, error: errorActualizar } =
@@ -569,156 +619,187 @@ function App() {
               </p>
 
               <div className="listas">
-                {listas.map((lista) => (
-                  <div
-                    key={lista.id}
-                    className={`lista ${
-                      String(listaSeleccionada) === String(lista.id)
-                        ? "seleccionada"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setListaSeleccionada(lista.id);
-                      setError("");
-                    }}
-                    style={{
-                      borderLeft: `7px solid ${lista.color || "#1565c0"}`,
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="lista"
-                      checked={
-                        String(listaSeleccionada) === String(lista.id)
-                      }
-                      onChange={() => {
-                        setListaSeleccionada(lista.id);
-                        setError("");
-                      }}
-                    />
+         {listas.map((lista) => (
+  <div
+    key={lista.id}
+    className={`lista ${
+      String(listaSeleccionada) === String(lista.id)
+        ? "seleccionada"
+        : ""
+    }`}
+    onClick={() => {
+      setListaSeleccionada(lista.id);
+      setError("");
+    }}
+    style={{
+      borderLeft: `7px solid ${lista.color || "#1565c0"}`,
+    }}
+  >
+   
 
-                    <div className="lista-contenido">
-                      <span className="numero-lista">
-                        LISTA {lista.numero ?? lista.id}
-                      </span>
+    <span className="numero-lista">
+      LISTA {lista.numero ?? lista.id}
+    </span>
 
-                      <h2>{lista.nombre}</h2>
+    <div className="cedula-contenido">
+      <div className="cedula-columna">
+        {lista.logo_url && (
+          <img
+            src={lista.logo_url}
+            alt={`Logo de ${lista.nombre}`}
+            className="cedula-logo"
+          />
+        )}
 
-                      <p>
-                        Candidato: <strong>{lista.candidato}</strong>
-                      </p>
-                    </div>
+        <h2>{lista.nombre}</h2>
+      </div>
 
-                    {String(listaSeleccionada) === String(lista.id) && (
-                      <div className="check-lista">✓</div>
-                    )}
-                  </div>
-                ))}
-              </div>
+      <div className="cedula-columna">
+        {lista.foto_candidato && (
+          <img
+            src={lista.foto_candidato}
+            alt={`Candidato ${lista.candidato}`}
+            className="cedula-foto"
+          />
+        )}
 
-              {listas.length === 0 && (
-                <p className="sin-listas">
-                  No hay listas disponibles para este colegio.
-                </p>
-              )}
-
-              <button
-                type="button"
-                className="btn-principal"
-                onClick={confirmarVoto}
-              >
-                CONTINUAR <span>→</span>
-              </button>
-
-              {error && <p className="error">{error}</p>}
-
-              <button
-                type="button"
-                className="btn-secundario"
-                onClick={() => setPantalla("carnet")}
-              >
-                ← VOLVER
-              </button>
-            </div>
-          )}
-
-          {pantalla === "confirmacion" && (
-            <div className="card confirmacion">
-              <div className="icono-confirmacion">⚠️</div>
-
-              <span className="etiqueta">CONFIRMACIÓN</span>
-
-              <h1>Confirma tu voto</h1>
-
-              <p className="subtitulo">
-                Revisa tu elección antes de registrar el voto.
-              </p>
-
-              <div className="seleccion-final">
-                <span>Has seleccionado</span>
-                <strong>LISTA {listaActual?.numero ?? listaActual?.id}</strong>
-                <p>{listaActual?.nombre}</p>
-                <small>Candidato: {listaActual?.candidato}</small>
-              </div>
-
-              <p className="pregunta">¿Estás seguro de tu elección?</p>
-
-              <div className="botones">
-                <button
-                  type="button"
-                  className="btn-secundario"
-                  onClick={() => setPantalla("votacion")}
-                  disabled={registrandoVoto}
-                >
-                  ← CAMBIAR
-                </button>
-
-                <button
-                  type="button"
-                  className="btn-principal"
-                  onClick={registrarVoto}
-                  disabled={registrandoVoto}
-                >
-                  {registrandoVoto ? "REGISTRANDO..." : "CONFIRMAR VOTO"}
-                </button>
-              </div>
-
-              {error && <p className="error">{error}</p>}
-            </div>
-          )}
-
-          {pantalla === "finalizado" && (
-            <div className="card finalizado">
-              <div className="icono-exito">✓</div>
-
-              <span className="etiqueta">PROCESO COMPLETADO</span>
-
-              <h1>¡Voto registrado!</h1>
-
-              <p className="subtitulo">
-                Tu participación ha sido registrada correctamente.
-              </p>
-
-              <div className="aviso-final">
-                <strong>Gracias por participar.</strong>
-
-                <span>
-                  Tu voto ha sido registrado en las Elecciones del Municipio
-                  Escolar.
-                </span>
-              </div>
-            </div>
-          )}
-        </main>
-      )}
-
-      <footer className="pie">
-        <span>Elecciones del Municipio Escolar</span>
-        <span className="punto">•</span>
-        <span>Participación estudiantil</span>
-      </footer>
+        <p>
+          <strong>{lista.candidato}</strong>
+        </p>
+      </div>
     </div>
-  );
+
+    <label className="cedula-marcar">
+      <input
+        type="radio"
+        name="lista"
+        checked={
+          String(listaSeleccionada) === String(lista.id)
+        }
+        onChange={() => {
+          setListaSeleccionada(lista.id);
+          setError("");
+        }}
+      />
+      Marcar esta lista
+    </label>
+
+    {String(listaSeleccionada) === String(lista.id) && (
+      <div className="check-lista">✓</div>
+    )}
+      </div>
+))}
+</div>
+
+{listas.length === 0 && (
+  <p className="sin-listas">
+    No hay listas disponibles para este colegio.
+  </p>
+)}
+
+<button
+  type="button"
+  className="btn-principal"
+  onClick={confirmarVoto}
+>
+  CONTINUAR <span>→</span>
+</button>
+
+{error && <p className="error">{error}</p>}
+
+<button
+  type="button"
+  className="btn-secundario"
+  onClick={() => setPantalla("carnet")}
+>
+  ← VOLVER
+</button>
+</div>
+)}
+
+{pantalla === "confirmacion" && (
+  <div className="card confirmacion">
+    <div className="icono-confirmacion">⚠️</div>
+    <span className="etiqueta">CONFIRMACIÓN</span>
+
+    <h1>Confirma tu voto</h1>
+
+    <p className="subtitulo">
+      Revisa tu elección antes de registrar el voto.
+    </p>
+
+    <div className="seleccion-final">
+      <span>Has seleccionado</span>
+      <strong>
+        LISTA {listaActual?.numero ?? listaActual?.id}
+      </strong>
+      <p>{listaActual?.nombre}</p>
+      <small>Candidato: {listaActual?.candidato}</small>
+    </div>
+
+    <p className="pregunta">
+      ¿Estás seguro de tu elección?
+    </p>
+
+    <div className="botones">
+      <button
+        type="button"
+        className="btn-secundario"
+        onClick={() => setPantalla("votacion")}
+        disabled={registrandoVoto}
+      >
+        ← CAMBIAR
+      </button>
+
+      <button
+        type="button"
+        className="btn-principal"
+        onClick={registrarVoto}
+        disabled={registrandoVoto}
+      >
+        {registrandoVoto ? "REGISTRANDO..." : "CONFIRMAR VOTO"}
+      </button>
+    </div>
+
+    {error && <p className="error">{error}</p>}
+  </div>
+)}
+
+{pantalla === "finalizado" && (
+  <div className="card finalizado">
+    <div className="icono-exito">✓</div>
+
+    <span className="etiqueta">PROCESO COMPLETADO</span>
+
+    <h1>¡Voto registrado!</h1>
+
+    <p className="subtitulo">
+      Tu participación ha sido registrada correctamente.
+    </p>
+
+    <div className="aviso-final">
+      <strong>Gracias por participar.</strong>
+      <span>
+        Tu voto ha sido registrado en las Elecciones del Municipio Escolar.
+      </span>
+    </div>
+  </div>
+)}
+</main>
+)}
+
+<footer className="pie">
+  <span>Elecciones del Municipio Escolar</span>
+  <span className="punto">•</span>
+  <span>Participación estudiantil</span>
+</footer>
+</div>
+);
 }
 
 export default App;
+ 
+
+
+
+

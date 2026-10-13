@@ -4,11 +4,7 @@ import Estudiantes from "./Estudiantes";
 import ConfiguracionEleccion from "./ConfiguracionEleccion";
 import ListasCandidatos from "./ListasCandidatos";
 
-function Admin({
-  supabase,
-  cerrarSesionAdmin,
-  volverAElecciones,
-}) {
+function Admin({ supabase, cerrarSesionAdmin, volverAElecciones }) {
   const [usuario, setUsuario] = useState("");
   const [password, setPassword] = useState("");
   const [errorAdmin, setErrorAdmin] = useState("");
@@ -21,7 +17,6 @@ function Admin({
   const [colegioSeleccionado, setColegioSeleccionado] = useState(null);
   const [errorColegios, setErrorColegios] = useState("");
 
-  // INICIAR SESIÓN
   const iniciarSesionAdmin = async (e) => {
     e.preventDefault();
     setErrorAdmin("");
@@ -49,9 +44,7 @@ function Admin({
       }
 
       if (!data) {
-        setErrorAdmin(
-          "Administrador no encontrado. Verifica el usuario y los permisos de consulta."
-        );
+        setErrorAdmin("Administrador no encontrado. Verifica el usuario.");
         return;
       }
 
@@ -74,7 +67,7 @@ function Admin({
       if (authError) {
         console.error("ERROR DE AUTENTICACIÓN:", authError);
         setErrorAdmin(
-          "No se pudo iniciar sesión. Verifica la contraseña y que la cuenta esté registrada en Supabase Authentication."
+          "No se pudo iniciar sesión. Verifica la contraseña y la cuenta de Supabase Authentication."
         );
         return;
       }
@@ -90,7 +83,6 @@ function Admin({
     }
   };
 
-  // CARGAR COLEGIOS
   const cargarColegios = async () => {
     setErrorColegios("");
 
@@ -114,7 +106,6 @@ function Admin({
     }
   }, [sesionAdmin, pantalla]);
 
-  // NAVEGACIÓN
   const irAElecciones = () => {
     setPantalla("colegios");
   };
@@ -124,7 +115,6 @@ function Admin({
     setPantalla("menuColegio");
   };
 
-  // CERRAR SESIÓN
   const salir = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -149,22 +139,18 @@ function Admin({
     }
   };
 
-  // LOGIN
   if (!sesionAdmin) {
     return (
       <div className="admin-container">
         <div className="admin-login">
           <div className="admin-icon">🔐</div>
-
           <h1>Panel de Administración</h1>
-
           <p className="admin-subtitle">
             Acceso exclusivo para administradores
           </p>
 
           <form onSubmit={iniciarSesionAdmin}>
             <label>Usuario</label>
-
             <input
               type="text"
               value={usuario}
@@ -175,7 +161,6 @@ function Admin({
             />
 
             <label>Contraseña</label>
-
             <input
               type="password"
               value={password}
@@ -213,21 +198,17 @@ function Admin({
     );
   }
 
-  // LISTA DE COLEGIOS
   if (pantalla === "colegios") {
     return (
       <div className="admin-container">
         <div className="admin-panel">
           <h1>Gestionar colegios</h1>
-
           <p className="admin-welcome">
             Selecciona el colegio que deseas administrar.
           </p>
 
           {errorColegios && (
-            <div className="admin-error" role="alert">
-              {errorColegios}
-            </div>
+            <div className="admin-error">{errorColegios}</div>
           )}
 
           {!errorColegios && colegios.length === 0 && (
@@ -259,7 +240,6 @@ function Admin({
     );
   }
 
-  // ESTUDIANTES
   if (pantalla === "estudiantes") {
     return (
       <Estudiantes
@@ -270,7 +250,6 @@ function Admin({
     );
   }
 
-  // LISTAS Y CANDIDATOS
   if (pantalla === "listas") {
     return (
       <ListasCandidatos
@@ -281,7 +260,6 @@ function Admin({
     );
   }
 
-  // CONFIGURACIÓN
   if (pantalla === "configuracion") {
     return (
       <ConfiguracionEleccion
@@ -292,15 +270,36 @@ function Admin({
     );
   }
 
-  // MENÚ DEL COLEGIO
+  if (pantalla === "resultados") {
+    return (
+      <div className="admin-container">
+        <div className="admin-panel">
+          <div className="admin-icon">📊</div>
+          <h1>Resultados electorales</h1>
+          <p className="admin-welcome">
+            Consulta de resultados del colegio.
+          </p>
+          <p>
+            La pantalla de resultados todavía necesita implementarse.
+          </p>
+          <button
+            type="button"
+            className="admin-btn-back"
+            onClick={() => setPantalla("menuColegio")}
+          >
+            ← VOLVER AL MENÚ
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (pantalla === "menuColegio") {
     return (
       <div className="admin-container">
         <div className="admin-panel">
           <div className="admin-icon">🏫</div>
-
           <h1>{colegioSeleccionado?.nombre}</h1>
-
           <p className="admin-welcome">
             Panel de administración del colegio
           </p>
@@ -314,9 +313,14 @@ function Admin({
               VER ESTUDIANTES
             </button>
 
-           
+            <button
+              type="button"
+              className="admin-btn-primary"
+              onClick={() => setPantalla("listas")}
+            >
               VER LISTAS Y CANDIDATOS
-            
+            </button>
+
             <button
               type="button"
               className="admin-btn-primary"
@@ -325,10 +329,13 @@ function Admin({
               VER RESULTADOS
             </button>
 
-          
-           
+            <button
+              type="button"
+              className="admin-btn-primary"
+              onClick={() => setPantalla("configuracion")}
+            >
               CONFIGURAR ELECCIÓN
-          
+            </button>
           </div>
 
           <button
@@ -351,12 +358,10 @@ function Admin({
     );
   }
 
-  // PANEL PRINCIPAL
   return (
     <div className="admin-container">
       <div className="admin-panel">
         <div className="admin-icon">🔐</div>
-
         <h1>Administración</h1>
 
         <p className="admin-welcome">
@@ -367,7 +372,6 @@ function Admin({
           <p>
             <strong>Usuario:</strong> {administrador?.usuario}
           </p>
-
           <p>
             <strong>Rol:</strong> {administrador?.rol}
           </p>
