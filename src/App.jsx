@@ -233,14 +233,19 @@ const cargarListas = async () => {
 
       // Registrar el voto con el estudiante y su colegio.
       const { error: errorVoto } = await supabase
-        .from("votos")
-        .insert([
-          {
-            estudiante_id: estudiante.id,
-            lista_id: listaSeleccionada,
-            colegio_id: colegioSeleccionado.id,
-          },
-        ]);
+  .from("votos")
+  .insert([
+    {
+      lista_id: listaSeleccionada,
+      colegio_id: colegioSeleccionado.id,
+    },
+  ]);
+
+if (errorVoto) {
+  console.error("ERROR AL REGISTRAR VOTO:", errorVoto);
+  setError("No se pudo registrar el voto: " + errorVoto.message);
+  return;
+}
 
      
 if (errorVoto) {

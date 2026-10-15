@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 function Estudiantes({ supabase, colegio, volver }) {
@@ -8,9 +7,15 @@ function Estudiantes({ supabase, colegio, volver }) {
 
   useEffect(() => {
     cargarEstudiantes();
+
+    const intervalo = setInterval(() => {
+      cargarEstudiantes(false);
+    }, 5000);
+
+    return () => clearInterval(intervalo);
   }, [colegio?.id]);
 
-  const cargarEstudiantes = async () => {
+  const cargarEstudiantes = async (mostrarCarga = true) => {
     if (!colegio?.id) {
       setError("No se ha seleccionado un colegio.");
       setEstudiantes([]);
@@ -18,7 +23,7 @@ function Estudiantes({ supabase, colegio, volver }) {
       return;
     }
 
-    setCargando(true);
+    if (mostrarCarga) setCargando(true);
     setError("");
 
     const { data, error: errorConsulta } = await supabase
@@ -32,9 +37,12 @@ function Estudiantes({ supabase, colegio, volver }) {
         "No se pudieron cargar los estudiantes: " +
           errorConsulta.message
       );
-      setEstudiantes([]);
     } else {
       const ordenados = (data || []).sort((a, b) => {
+        if (a.ya_voto !== b.ya_voto) {
+          return a.ya_voto ? 1 : -1;
+        }
+
         const gradoA = parseInt(a.grado, 10) || 0;
         const gradoB = parseInt(b.grado, 10) || 0;
 
@@ -48,9 +56,7 @@ function Estudiantes({ supabase, colegio, volver }) {
           { sensitivity: "base" }
         );
 
-        if (apellido !== 0) {
-          return apellido;
-        }
+        if (apellido !== 0) return apellido;
 
         return (a.nombres || "").localeCompare(
           b.nombres || "",
@@ -64,6 +70,14 @@ function Estudiantes({ supabase, colegio, volver }) {
 
     setCargando(false);
   };
+
+  const pendientes = estudiantes.filter(
+    (estudiante) => !estudiante.ya_voto
+  ).length;
+
+  const votaron = estudiantes.filter(
+    (estudiante) => estudiante.ya_voto
+  ).length;
 
   const encabezado = {
     padding: "11px 12px",
@@ -83,6 +97,27 @@ function Estudiantes({ supabase, colegio, volver }) {
     whiteSpace: "nowrap",
   };
 
+  const indicador = (color) => ({
+    display: "inline-block",
+    width: "11px",
+    height: "11px",
+    background: color,
+    borderRadius: "2px",
+    marginRight: "7px",
+    verticalAlign: "middle",
+  });
+
+  const etiquetaVotacion = (yaVoto) => ({
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "5px 9px",
+    borderRadius: "5px",
+    background: yaVoto ? "#e7f7ec" : "#fdeaea",
+    color: yaVoto ? "#18753b" : "#b42318",
+    fontWeight: "600",
+    fontSize: "12px",
+  });
+
   return (
     <div className="admin-container">
       <div
@@ -93,9 +128,7 @@ function Estudiantes({ supabase, colegio, volver }) {
 
         <h1>Estudiantes</h1>
 
-        <p className="admin-welcome">
-          {colegio?.nombre}
-        </p>
+        <p className="admin-welcome">{colegio?.nombre}</p>
 
         {cargando && <p>Cargando estudiantes...</p>}
 
@@ -103,8 +136,9 @@ function Estudiantes({ supabase, colegio, volver }) {
           <div className="admin-error">
             {error}
             <button
+              type="button"
               className="admin-btn-primary"
-              onClick={cargarEstudiantes}
+              onClick={() => cargarEstudiantes()}
             >
               VOLVER A INTENTAR
             </button>
@@ -123,9 +157,7 @@ function Estudiantes({ supabase, colegio, volver }) {
                 margin: "20px 0 12px",
               }}
             >
-              <strong
-                style={{ fontSize: "14px", color: "#26364a" }}
-              >
+              <strong style={{ fontSize: "14px", color: "#26364a" }}>
                 Lista de estudiantes
               </strong>
 
@@ -140,6 +172,43 @@ function Estudiantes({ supabase, colegio, volver }) {
               >
                 Total: {estudiantes.length}
               </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                flexWrap: "wrap",
+                marginBottom: "15px",
+              }}
+            >
+              <div
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: "6px",
+                  background: "#fdeaea",
+                  color: "#b42318",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                }}
+              >
+                <span style={indicador("#dc2626")} />
+                Pendientes: {pendientes}
+              </div>
+
+              <div
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: "6px",
+                  background: "#e7f7ec",
+                  color: "#18753b",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                }}
+              >
+                <span style={indicador("#16a34a")} />
+                Ya votaron: {votaron}
+              </div>
             </div>
 
             {estudiantes.length === 0 ? (
@@ -181,9 +250,7 @@ function Estudiantes({ supabase, colegio, volver }) {
                         key={estudiante.id}
                         style={{
                           background:
-                            indice % 2 === 0
-                              ? "#ffffff"
-                              : "#f8fafc",
+                            indice % 2 === 0 ? "#ffffff" : "#f8fafc",
                         }}
                       >
                         <td style={celda}>{indice + 1}</td>
@@ -199,9 +266,18 @@ function Estudiantes({ supabase, colegio, volver }) {
                             : "No habilitado"}
                         </td>
                         <td style={celda}>
-                          {estudiante.ya_voto
-                            ? "Ya votó"
-                            : "Pendiente"}
+                          <span
+                            style={etiquetaVotacion(estudiante.ya_voto)}
+                          >
+                            <span
+                              style={indicador(
+                                estudiante.ya_voto
+                                  ? "#16a34a"
+                                  : "#dc2626"
+                              )}
+                            />
+                            {estudiante.ya_voto ? "Ya votó" : "Pendiente"}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -213,6 +289,7 @@ function Estudiantes({ supabase, colegio, volver }) {
         )}
 
         <button
+          type="button"
           className="admin-btn-back"
           onClick={volver}
         >

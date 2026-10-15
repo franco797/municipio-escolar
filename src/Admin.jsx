@@ -3,6 +3,7 @@ import "./Admin.css";
 import Estudiantes from "./Estudiantes";
 import ConfiguracionEleccion from "./ConfiguracionEleccion";
 import ListasCandidatos from "./ListasCandidatos";
+import Resultados from "./Resultados";
 
 function Admin({ supabase, cerrarSesionAdmin, volverAElecciones }) {
   const [usuario, setUsuario] = useState("");
@@ -271,28 +272,14 @@ function Admin({ supabase, cerrarSesionAdmin, volverAElecciones }) {
   }
 
   if (pantalla === "resultados") {
-    return (
-      <div className="admin-container">
-        <div className="admin-panel">
-          <div className="admin-icon">📊</div>
-          <h1>Resultados electorales</h1>
-          <p className="admin-welcome">
-            Consulta de resultados del colegio.
-          </p>
-          <p>
-            La pantalla de resultados todavía necesita implementarse.
-          </p>
-          <button
-            type="button"
-            className="admin-btn-back"
-            onClick={() => setPantalla("menuColegio")}
-          >
-            ← VOLVER AL MENÚ
-          </button>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <Resultados
+      supabase={supabase}
+      colegio={colegioSeleccionado}
+      volver={() => setPantalla("menuColegio")}
+    />
+  );
+}
 
   if (pantalla === "menuColegio") {
     return (
