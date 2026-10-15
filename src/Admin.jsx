@@ -84,22 +84,37 @@ function Admin({ supabase, cerrarSesionAdmin, volverAElecciones }) {
     }
   };
 
-  const cargarColegios = async () => {
-    setErrorColegios("");
+ 
+const cargarColegios = async () => {
+  setErrorColegios("");
 
-    const { data, error } = await supabase
+  let consulta = supabase
+    .from("colegios")
+    .select("*")
+    .order("nombre", { ascending: true });
+
+  // El administrador de un colegio solo ve su colegio asignado.
+  if (
+    administrador?.rol !== "principal" &&
+    administrador?.colegio_id
+  ) {
+    consulta = supabase
       .from("colegios")
       .select("*")
-      .order("nombre", { ascending: true });
+      .eq("id", administrador.colegio_id);
+  }
 
-    if (error) {
-      console.error("ERROR AL CARGAR COLEGIOS:", error);
-      setErrorColegios("No se pudieron cargar los colegios.");
-      return;
-    }
+  const { data, error } = await consulta;
 
-    setColegios(data || []);
-  };
+  if (error) {
+    console.error("ERROR AL CARGAR COLEGIOS:", error);
+    setErrorColegios("No se pudieron cargar los colegios.");
+    return;
+  }
+
+  setColegios(data || []);
+};
+
 
   useEffect(() => {
     if (sesionAdmin && pantalla === "colegios") {
