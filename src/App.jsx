@@ -241,11 +241,7 @@ const cargarListas = async () => {
     },
   ]);
 
-if (errorVoto) {
-  console.error("ERROR AL REGISTRAR VOTO:", errorVoto);
-  setError("No se pudo registrar el voto: " + errorVoto.message);
-  return;
-}
+
 
      
 if (errorVoto) {
